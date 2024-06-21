@@ -1,12 +1,13 @@
+
 function boldFirstCharacters() {
     const elements = document.querySelectorAll('p, blockquote, span');
     for (let i = 0; i < elements.length; i++) {
       const element = elements[i];
-      if (element.innerText.trim().length < 100) {
-        continue; // Skip elements with less than 40 characters
+      if (element.innerText.trim().length < 50) {
+        continue; // Skip elements with less than 50 characters
       }
-
-      element.style.fontFamily = "Calibri";
+  
+      element.style.fontFamily = "Arial";
       element.style.fontWeight = 300;
       const childNodes = element.childNodes;
       for (let j = 0; j < childNodes.length; j++) {
@@ -27,11 +28,11 @@ function boldFirstCharacters() {
             words[k] = `<strong>${firstChars}</strong>${remainingChars}`;
           }
           const newNode = document.createElement('span');
-          newNode.innerHTML = words.join(' ');
+          newNode.innerHTML = words.join('&nbsp;');
+          newNode.style.whiteSpace = 'pre-wrap';
           node.parentNode.replaceChild(newNode, node);
         }
       }
-    //   element.style.textAlign = 'justify'; // Justify the text in the element
   
       const strongElements = element.querySelectorAll('strong');
       for (let l = 0; l < strongElements.length; l++) {
@@ -48,9 +49,26 @@ function boldFirstCharacters() {
   
   const chatContainer = document.querySelector('.chat-container');
   if (chatContainer) {
-    chatContainer.addEventListener('click', function() {
-      boldFirstCharacters();
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        mutation.addedNodes.forEach(function(node) {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            boldFirstCharacters();
+          }
+        });
+      });
     });
+    observer.observe(chatContainer, { childList: true });
   }
-
-  boldFirstCharacters();
+  
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        boldFirstCharacters();
+        observer.unobserve(entry.target);
+        observer.observe(document.body);
+      }
+    });
+  }, { threshold: 0 });
+  
+  observer.observe(document.body);
